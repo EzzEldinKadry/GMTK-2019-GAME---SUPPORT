@@ -8,12 +8,13 @@ public class BotManager : MonoBehaviour
     AIPath aIPath;
     Rigidbody2D rb;
     Animator animator;
+    Player player;
     
-    float initialY, floatingTime = 0;
+    float floatingTime = 0;
     bool isGrounded = false;
 
     public float fallMultiplier = 2.5f;
-    public float health = 100, jumpTime = 2;
+    public float jumpTime = 2;
     public Transform Enemy;
     void Start()
     {
@@ -21,8 +22,8 @@ public class BotManager : MonoBehaviour
         aIPath = GetComponent<AIPath>();
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        player = GetComponent<Player>();
 
-        initialY = transform.position.y;
         InvokeRepeating("Search", 0, 0.5f);
     }
 
@@ -42,7 +43,7 @@ public class BotManager : MonoBehaviour
         {
             rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
         }
-        if (isGrounded)
+        if (!isGrounded)
         {
             floatingTime += Time.deltaTime;
         }
@@ -51,13 +52,12 @@ public class BotManager : MonoBehaviour
             print("enzel");
             StartCoroutine(ResumeDestination());
         }
-        if (Vector3.Distance(transform.position, Enemy.transform.position) <= 8f)
+        if (Vector3.Distance(transform.position, Enemy.transform.position) <= 3f)   //Attack
         {
             StartCoroutine(Attack());
         }
         //print(Vector3.Distance(transform.position, Enemy.transform.position));
         animator.SetFloat("speed", Mathf.Abs(aIPath.desiredVelocity.x));
-        health = Mathf.Clamp(health, 0, health - Time.deltaTime);       
     }
 
     void Search()
@@ -66,7 +66,7 @@ public class BotManager : MonoBehaviour
         if (floatingTime >= jumpTime)
             return;
 
-        if (health < 80f || destination.target == null)
+        if (player.getHealth() < 80f || destination.target == null)
         {
             Pickup = GameObject.FindGameObjectsWithTag("Material");
             if (Pickup.Length == 0)
@@ -123,6 +123,11 @@ public class BotManager : MonoBehaviour
             floatingTime = 0;
             isGrounded = true;
             print("reset");
+        }
+        else if(collision.collider.tag == "Projectile")
+        {
+            rb.AddForce(new Vector3(-collision.gameObject.transform.position.x * 500, 0, 0));
+            print("a7a eshta8al");
         }
     }
     void OnCollisionExit2D(Collision2D collision)

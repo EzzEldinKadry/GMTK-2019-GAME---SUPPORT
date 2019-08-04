@@ -3,21 +3,36 @@ using UnityEngine;
 
 public class Boosts : MonoBehaviour
 {
-    public GameObject effect, projectile;
+    public GameObject effect;
+    public float speed = 4;
+
     GameObject temp;
+    Vector3 target;
+    bool toTarget = false;
+
+    void Update()
+    {
+        if (toTarget)
+            transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+    }
    void OnTriggerEnter2D(Collider2D other)
     {
-        temp = Instantiate(effect, transform);
-        StartCoroutine(Coroutine());
+        if (gameObject.tag == "Projectile")
+            return;
+        gameObject.tag = "Projectile";
+        StartCoroutine(Coroutine(other));
     }
-    IEnumerator Coroutine()
+    IEnumerator Coroutine(Collider2D player)
     {
-        Destroy(GetComponentInChildren(typeof(GameObject)));    //destroy particle system
-        GetComponent<SpriteRenderer>().enabled = false;
-        yield return new WaitForSeconds(1.5f);
-        Destroy(temp);
-        Instantiate(projectile, transform);
-        //yield return WaitUntil(()=>)
+        target = player.tag == "Player1" ?
+            GameObject.FindGameObjectWithTag("Player2").transform.position : GameObject.FindGameObjectWithTag("Player1").transform.position;
+        toTarget = true;
+
+        yield return new WaitUntil(() => Vector3.Distance(transform.position, target) <= 0f);
+        GetComponent<CircleCollider2D>().isTrigger = false;
+        Instantiate(effect, transform);
+        yield return new WaitForSeconds(0.3f);
         Destroy(gameObject);
+
     }
 }

@@ -7,6 +7,9 @@ TagManager:
   - Material
   - Boosts
   - Ground
+  - Player2
+  - Projectile
+  - Player1
   layers:
   - Default
   - TransparentFX
